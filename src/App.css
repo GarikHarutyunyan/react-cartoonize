@@ -13,14 +13,6 @@
   cursor: pointer !important;
 }
 
-.d-none {
-  display: none;
-}
-
-.d-block {
-  display: block;
-}
-
 .text-shadow {
   text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
 }
@@ -35,4 +27,9 @@
   color: #fff;
   background-color: #090d2a;
   border-color: #070a1f;
+}
+
+.cartoonize__button {
+  height: 32px;
+  cursor: pointer;
 }
