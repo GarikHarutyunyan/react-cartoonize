@@ -1,6 +1,7 @@
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-backend-wasm';
 import React, {useRef, useState} from 'react';
+import placeholderImg from '../../src/assets/image.png';
 import './cartoonizer.css';
 
 const SIZE: number = 300;
@@ -44,7 +45,7 @@ const Cartoonizer: React.FC<ICartoonizerProps> = ({model}) => {
   };
 
   const predict = async (imgElement: HTMLImageElement): Promise<void> => {
-    let img = tf.browser.fromPixels(imgElement);
+    let img: any = tf.browser.fromPixels(imgElement);
     const shape: [number, number, number] = img.shape;
     const [w, h] = shape;
     img = normalize(img);
@@ -61,11 +62,11 @@ const Cartoonizer: React.FC<ICartoonizerProps> = ({model}) => {
     const slice = w > h ? [0, pad, 0] : [pad, 0, 0];
     img_out = img_out.slice(slice);
 
-    await draw(img_out, shape);
+    await draw(img_out);
     console.log(Math.round((timer / 1000) * 10) / 10);
   };
 
-  const normalize = (img: tf.Tensor) => {
+  const normalize = (img: any) => {
     const [w, h] = img.shape;
     const pad: [number, number][] =
       w > h
@@ -88,8 +89,8 @@ const Cartoonizer: React.FC<ICartoonizerProps> = ({model}) => {
     return img.sub(offset).div(offset);
   };
 
-  const draw = async (img: tf.Tensor): Promise<void> => {
-    await tf.browser.toPixels(img, canvasRef.current);
+  const draw = async (img: any): Promise<void> => {
+    await tf.browser.toPixels(img, canvasRef.current as HTMLCanvasElement);
 
     if (canvasRef.current) {
       scaleCanvasToImage();
@@ -138,7 +139,7 @@ const Cartoonizer: React.FC<ICartoonizerProps> = ({model}) => {
               {'Upload Image'}
             </a>
             <input
-              ref={fileInputRef}
+              ref={fileInputRef as any}
               type={'file'}
               onChange={onChange}
               accept={'image/*'}
@@ -148,7 +149,7 @@ const Cartoonizer: React.FC<ICartoonizerProps> = ({model}) => {
         </div>
         <img
           ref={sourceRef}
-          src={imageSrc ? (imageSrc as string) : '../../src/assets/image.png'}
+          src={imageSrc ? (imageSrc as string) : placeholderImg}
           onClick={!imageSrc ? onUpload : undefined}
           className={'cartoonizer__original-image'}
         />
