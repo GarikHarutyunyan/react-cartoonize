@@ -5,7 +5,7 @@ import './cartoonizer.css';
 
 const SIZE: number = 300;
 const LOADING_TEXT: string =
-  'Please wait. Running CartoonGAN in your browser..';
+  'Please wait. Running CartoonGAN in your browser․․․';
 
 interface ICartoonizerProps {
   model: any;
@@ -18,8 +18,9 @@ const Cartoonizer: React.FC<ICartoonizerProps> = ({model}) => {
   const sourceRef = useRef<HTMLImageElement | null>(null);
   const fileInputRef = useRef<HTMLCanvasElement | null>(null);
 
-  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const onChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const file = event.target.files?.[0];
+
     if (file?.type.match('image.*')) {
       const reader = new FileReader();
 
@@ -87,7 +88,7 @@ const Cartoonizer: React.FC<ICartoonizerProps> = ({model}) => {
     return img.sub(offset).div(offset);
   };
 
-  const draw = async (img: tf.Tensor) => {
+  const draw = async (img: tf.Tensor): Promise<void> => {
     await tf.browser.toPixels(img, canvasRef.current);
 
     if (canvasRef.current) {
@@ -97,7 +98,7 @@ const Cartoonizer: React.FC<ICartoonizerProps> = ({model}) => {
 
   const scaleCanvasToImage = (
     imgElement: HTMLImageElement = sourceRef.current as HTMLImageElement
-  ) => {
+  ): void => {
     if (canvasRef.current) {
       const canvas = canvasRef.current;
       const tmpcan = document.createElement('canvas');
@@ -124,7 +125,7 @@ const Cartoonizer: React.FC<ICartoonizerProps> = ({model}) => {
     }
   };
 
-  const onUpload = () => {
+  const onUpload = (): void => {
     fileInputRef.current?.click();
   };
 
