@@ -2,7 +2,7 @@ import '@tensorflow/tfjs-backend-wasm';
 import './App.css';
 import { Cartoonizer } from './components/Cartoonizer';
 
-const App = () => {
+const App: React.FC = () => {
   return (
     <div>
       <h1>{'Cartoonize your pictures'}</h1>

@@ -1,12 +1,11 @@
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-backend-wasm';
 import React, { useEffect, useRef, useState } from 'react';
-
+import './cartoonizer.css';
 
 const SIZE = 300;
 
-const Cartoonizer = () => {
-    
+const Cartoonizer: React.FC = () => {    
   const [model, setModel] = useState<any>(null);
   const [imageSrc, setImageSrc] = useState<string | ArrayBuffer>('');
   const [status, setStatus] = useState<string>('Please wait. Running CartoonGAN in your browser..');
@@ -81,8 +80,6 @@ const Cartoonizer = () => {
     const scaleby = size[0] / img.shape[0];
     await tf.browser.toPixels(img, canvasRef.current);
     if (canvasRef.current && downloadRef.current) {
-      // canvasRef.current.classList.remove('d-none');
-      // canvasRef.current.classList.add('d-block');
       setStatus('');
       scaleCanvasToImage();
     }
@@ -121,7 +118,7 @@ const Cartoonizer = () => {
   }
 };
   return (
-    <div style={{display: 'flex', gap:'24px'}}>        
+    <div className={'cartoonizer'}>        
         <div>
           <div>
             <label>
@@ -129,9 +126,9 @@ const Cartoonizer = () => {
               <input type="file" onChange={onChange} accept={'image/*'} hidden />
             </label>
           </div>
-          <img ref={sourceRef} src={imageSrc as string}  style={{maxWidth: '500px'}}/>
+          <img ref={sourceRef} src={imageSrc as string} className={'cartoonizer__original-image'} />
         </div>
-        <button onClick={onCartoonize} className={'cartoonize__button'}>{'Cartoonize'}</button>        
+        <button onClick={onCartoonize} className={'cartoonizer__cartoonize-button'}>{'Cartoonize'}</button>        
         <div>
           <div>
             <label>{'Cartoonized Image'}</label>

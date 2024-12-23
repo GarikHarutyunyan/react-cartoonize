@@ -1,0 +1,13 @@
+.cartoonizer {
+    display: flex;
+    gap: 24px;
+}
+
+.cartoonizer__original-image {
+    max-width: 500px;
+}
+
+.cartoonizer__cartoonize-button {
+    height: 32px;
+    cursor: pointer;
+}
