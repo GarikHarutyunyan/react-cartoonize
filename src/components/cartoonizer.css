@@ -11,6 +11,10 @@
     max-width: 500px;
 }
 
+.cartoonizer__original-image-uploader {
+    cursor: pointer;
+}
+
 .cartoonizer__cartoonize-button {
     height: 32px;
     cursor: pointer;

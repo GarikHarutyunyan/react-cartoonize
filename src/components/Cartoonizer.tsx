@@ -3,7 +3,9 @@ import '@tensorflow/tfjs-backend-wasm';
 import React, {useRef, useState} from 'react';
 import './cartoonizer.css';
 
-const SIZE = 300;
+const SIZE: number = 300;
+const LOADING_TEXT: string =
+  'Please wait. Running CartoonGAN in your browser..';
 
 interface ICartoonizerProps {
   model: any;
@@ -11,12 +13,9 @@ interface ICartoonizerProps {
 
 const Cartoonizer: React.FC<ICartoonizerProps> = ({model}) => {
   const [imageSrc, setImageSrc] = useState<string | ArrayBuffer | null>(null);
-  const [status, setStatus] = useState<string>(
-    'Please wait. Running CartoonGAN in your browser..'
-  );
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sourceRef = useRef<HTMLImageElement | null>(null);
-  const downloadRef = useRef<HTMLAnchorElement | null>(null);
   const fileInputRef = useRef<HTMLCanvasElement | null>(null);
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,7 +35,11 @@ const Cartoonizer: React.FC<ICartoonizerProps> = ({model}) => {
   const onCartoonize = (): void => {
     const img: HTMLImageElement = new Image();
     img.src = imageSrc as string;
-    img.onload = () => predict(img);
+    setIsLoading(true);
+    img.onload = async () => {
+      await predict(img);
+      setIsLoading(false);
+    };
   };
 
   const predict = async (imgElement: HTMLImageElement): Promise<void> => {
@@ -57,7 +60,7 @@ const Cartoonizer: React.FC<ICartoonizerProps> = ({model}) => {
     const slice = w > h ? [0, pad, 0] : [pad, 0, 0];
     img_out = img_out.slice(slice);
 
-    draw(img_out, shape);
+    await draw(img_out, shape);
     console.log(Math.round((timer / 1000) * 10) / 10);
   };
 
@@ -87,8 +90,7 @@ const Cartoonizer: React.FC<ICartoonizerProps> = ({model}) => {
   const draw = async (img: tf.Tensor) => {
     await tf.browser.toPixels(img, canvasRef.current);
 
-    if (canvasRef.current && downloadRef.current) {
-      setStatus('');
+    if (canvasRef.current) {
       scaleCanvasToImage();
     }
   };
@@ -119,11 +121,6 @@ const Cartoonizer: React.FC<ICartoonizerProps> = ({model}) => {
       // Redraw the original content onto the resized canvas
       const ctx = canvas.getContext('2d');
       ctx?.drawImage(tmpcan, 0, 0, cw, ch, 0, 0, imgWidth, imgHeight);
-
-      // Optional: Update the download link
-      // if (downloadRef.current) {
-      //   downloadRef.current.href = canvas.toDataURL('image/jpeg');
-      // }
     }
   };
 
@@ -136,7 +133,9 @@ const Cartoonizer: React.FC<ICartoonizerProps> = ({model}) => {
       <div className={'cartoonizer__original-image-container'}>
         <div>
           <label>
-            {'Upload your Image'}
+            <a className={'cartoonizer__original-image-uploader'}>
+              {'Upload Image'}
+            </a>
             <input
               ref={fileInputRef}
               type={'file'}
@@ -163,11 +162,9 @@ const Cartoonizer: React.FC<ICartoonizerProps> = ({model}) => {
       <div>
         <div>
           <label>{'Cartoonized Image'}</label>
-          <a ref={downloadRef} download={'cartoon.jpeg'}>
-            {'Download'}
-          </a>
         </div>
-        <canvas ref={canvasRef} />
+        {isLoading ? <span>{LOADING_TEXT}</span> : null}
+        <canvas ref={canvasRef} hidden={isLoading} />
       </div>
     </div>
   );
