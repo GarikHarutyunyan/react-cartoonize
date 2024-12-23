@@ -3,6 +3,10 @@
     gap: 24px;
 }
 
+.cartoonizer__original-image-container {
+    width: 500px;
+}
+
 .cartoonizer__original-image {
     max-width: 500px;
 }

@@ -1,29 +1,21 @@
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-backend-wasm';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import './cartoonizer.css';
 
 const SIZE = 300;
 
-const Cartoonizer: React.FC = () => {    
-  const [model, setModel] = useState<any>(null);
-  const [imageSrc, setImageSrc] = useState<string | ArrayBuffer>('');
+interface ICartoonizerProps {
+    model: any;
+}
+
+const Cartoonizer: React.FC<ICartoonizerProps> = ({model}) => {    
+  const [imageSrc, setImageSrc] = useState<string | ArrayBuffer | null>(null);
   const [status, setStatus] = useState<string>('Please wait. Running CartoonGAN in your browser..');
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sourceRef = useRef<HTMLImageElement | null>(null);
   const downloadRef = useRef<HTMLAnchorElement | null>(null);
-
-  useEffect(() => {
-    const loadModel = async () => {
-      await tf.setBackend('wasm');
-      const loadedModel = await tf.loadGraphModel('../../src/models/web-uint8/model.json');
-      setModel(loadedModel);
-      // Warm up the model
-      // loadedModel.predict(tf.zeros([1, 1, 1, 3])).dispose();
-    };
-
-    loadModel();
-  }, []);
+  const fileInputRef = useRef<HTMLCanvasElement | null>(null);
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -62,7 +54,6 @@ const Cartoonizer: React.FC = () => {
     draw(img_out, shape);
     console.log(Math.round(timer / 1000 * 10) / 10);
   };
-
   
   const normalize = (img: tf.Tensor) => {
     const [w, h] = img.shape;
@@ -72,13 +63,11 @@ const Cartoonizer: React.FC = () => {
     const offset = tf.scalar(127.5);
 
     return img.sub(offset).div(offset);
-  };
+  };  
 
-  
-
-  const draw = async (img: tf.Tensor, size: number[]) => {
-    const scaleby = size[0] / img.shape[0];
+  const draw = async (img: tf.Tensor) => {
     await tf.browser.toPixels(img, canvasRef.current);
+
     if (canvasRef.current && downloadRef.current) {
       setStatus('');
       scaleCanvasToImage();
@@ -86,49 +75,53 @@ const Cartoonizer: React.FC = () => {
   };
 
   const scaleCanvasToImage = (imgElement: HTMLImageElement = sourceRef.current as HTMLImageElement) => {
-  if (canvasRef.current) {
-    debugger
-    const canvas = canvasRef.current;
-    const tmpcan = document.createElement('canvas');
-    const tctx = tmpcan.getContext('2d');
+    if (canvasRef.current) {
+        const canvas = canvasRef.current;
+        const tmpcan = document.createElement('canvas');
+        const tctx = tmpcan.getContext('2d');
 
-    // Store the current canvas content in a temporary canvas
-    const cw = canvas.width;
-    const ch = canvas.height;
-    tmpcan.width = cw;
-    tmpcan.height = ch;
-    tctx?.drawImage(canvas, 0, 0);
+        // Store the current canvas content in a temporary canvas
+        const cw = canvas.width;
+        const ch = canvas.height;
+        tmpcan.width = cw;
+        tmpcan.height = ch;
+        tctx?.drawImage(canvas, 0, 0);
 
-    // Get the dimensions of the image element in the DOM
-    const imgWidth = imgElement.width;
-    const imgHeight = imgElement.height;
+        // Get the dimensions of the image element in the DOM
+        const imgWidth = imgElement.width;
+        const imgHeight = imgElement.height;
 
-    // Resize the canvas to match the image dimensions
-    canvas.width = imgWidth;
-    canvas.height = imgHeight;
+        // Resize the canvas to match the image dimensions
+        canvas.width = imgWidth;
+        canvas.height = imgHeight;
 
-    // Redraw the original content onto the resized canvas
-    const ctx = canvas.getContext('2d');
-    ctx?.drawImage(tmpcan, 0, 0, cw, ch, 0, 0, imgWidth, imgHeight);
+        // Redraw the original content onto the resized canvas
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(tmpcan, 0, 0, cw, ch, 0, 0, imgWidth, imgHeight);
 
-    // Optional: Update the download link
-    // if (downloadRef.current) {
-    //   downloadRef.current.href = canvas.toDataURL('image/jpeg');
-    // }
-  }
-};
+        // Optional: Update the download link
+        // if (downloadRef.current) {
+        //   downloadRef.current.href = canvas.toDataURL('image/jpeg');
+        // }
+        }
+    };
+
+    const onUpload = () =>{ 
+        fileInputRef.current?.click();
+    }
+
   return (
     <div className={'cartoonizer'}>        
-        <div>
+        <div className={'cartoonizer__original-image-container'}>
           <div>
             <label>
               {'Upload your Image'}
-              <input type="file" onChange={onChange} accept={'image/*'} hidden />
+              <input ref={fileInputRef} type={'file'} onChange={onChange} accept={'image/*'} hidden />
             </label>
           </div>
-          <img ref={sourceRef} src={imageSrc as string} className={'cartoonizer__original-image'} />
+          <img ref={sourceRef} src={imageSrc ? imageSrc as string :  '../../src/assets/image.png'} onClick={!imageSrc ? onUpload : undefined} className={'cartoonizer__original-image'} />
         </div>
-        <button onClick={onCartoonize} className={'cartoonizer__cartoonize-button'}>{'Cartoonize'}</button>        
+        <button onClick={onCartoonize} disabled={!imageSrc} className={'cartoonizer__cartoonize-button'}>{'Cartoonize'}</button>        
         <div>
           <div>
             <label>{'Cartoonized Image'}</label>
